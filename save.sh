@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ACCESS_TOKEN="" #Cambiar de "" a $ DROPBOX pegado
+ACCESS_TOKEN=$DROPBOX
 FILE_PATH="/workspaces/Servermods/Minecraft-server/world-r.zip"
 DROPBOX_PATH="/world-r.zip"
 
