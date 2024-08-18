@@ -64,4 +64,9 @@ if tunnel_service == "playit":
       cd Minecraft-server
       java {memory_allocation} {server_flags} -jar {jar_name} nogui
       ''')
-  os.system("/workspaces/Servermods/save.sh")
+
+from subprocess import Popen, CREATE_NEW_CONSOLE
+
+Popen("playit", creationflags=CREATE_NEW_CONSOLE)
+
+os.system("/workspaces/Servermods/save.sh")
