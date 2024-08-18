@@ -1,20 +1,25 @@
 import os
 import re
 import json
+from os.path import exists
 
-version = '1.20.1'
-forge_version = "47.2.21"  # If you are going to use forge
+
+version = input("Elija la version de Minecraft: ")
+forge_version = "47.3.5"  # If you are going to use forge
 java_path = "/usr/lib/jvm/java-17-openjdk-amd64/bin/java"
 #Chose server type. Currently available versions: fabric, paper, forge
-server_type = 'forge'
+server_type = input("Elija el tipo de servidor (fabric, paper, forge): ")
+
+if not exists("/workspaces/Servermods/Minecraft-server/server.py"):
+  os.system(f"python createsv.py {version} {server_type}")
 
 
 # Update the package lists
-os.system("sudo apt update &>/dev/null && echo \"apt cache successfully updated\" || echo \"apt cache update failed, you might receive stale packages\"")
+os.system("sudo apt -y update && echo \"apt cache successfully updated\" || echo \"apt cache update failed, you might receive stale packages\"")
 # Install OpenJDK 17
 # !wget -qO - https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public | sudo apt-key add -
 # !sudo add-apt-repository --yes https://adoptopenjdk.jfrog.io/adoptopenjdk/deb/ &>/dev/null || echo \"Failed to add repo. Still can be ignored if openjdk17 gets installed.\"
-os.system("sudo apt-get install openjdk-17-jre-headless &>/dev/null && echo \"Yay! Openjdk17 has been successfully installed.\" || echo \"Failed to install OpenJdk17.\"")
+os.system("sudo apt-get -y install openjdk-17-jre-headless && echo \"Yay! Openjdk17 has been successfully installed.\" || echo \"Failed to install OpenJdk17.\"")
 #Perform java version check
 java_ver = os.system("java -version 2>&1 | awk -F[\"\.] -v OFS=. \"NR==1{print $2}\"")
 
@@ -45,66 +50,18 @@ memory_allocation = "-Xmx8162M -Xms512M"
 os.system("touch eula.txt")
 os.system("echo \"eula=true\" >> eula.txt")
 
-#ferium
-os.system("wget \"https://github.com/gorilla-devs/ferium/releases/download/v4.5.2/ferium-linux-nogui.zip\"")
-os.system("unzip -n \"ferium-linux-nogui.zip\"")
-os.system("rm \"ferium-linux-nogui.zip\"")
-
-os.system("./ferium profile delete \"Server\"")
-os.system(f"./ferium profile create -n \"Server\" -v \"{version}\" -m \"{server_type}\" -o \"/workspaces/Servermods/Minecraft-server/mods\"")
-
-os.system("./ferium add 472661") #Fabric API
-os.system("./ferium add 306612") #CraftControlRCON
-os.system("./ferium add 630406") #CosmeticsArmours
-os.system("./ferium add 405076") #Epic Fight
-os.system("./ferium add 258587") #ItemPhysic
-os.system("./ferium add 890166") #Cosmetic Nametags
-os.system("./ferium add 348521") #Cloth Config API
-os.system("./ferium add 306770") #Patchouli 
-os.system("./ferium add 659110") #Regions Unexplored
-os.system("./ferium add 618298") #Sophisticated Core
-os.system("./ferium add 243707") #Corail Tombstone
-os.system("./ferium add 500273") #Visual Workbench
-os.system("./ferium add 331936") #Citadel
-os.system("./ferium add 419699") #Architectury API
-os.system("./ferium add 531761") #Balm
-os.system("./ferium add 237749") #CoroUtil
-os.system("./ferium add 257814") #CreativeCore
-os.system("./ferium add 349559") #FallingTree
-os.system("./ferium add 238222") #Just Enough Items
-os.system("./ferium add 658587") #playerAnimation Lib
-os.system("./ferium add 914094") #SetHome TCT
-os.system("./ferium add 535489") #Sound Physics Remastered
-os.system("./ferium add 235577") #TrashSlot
-os.system("./ferium add 945479") #What Are They Up To (Watut)
-os.system("./ferium add 493246") #Flan
-os.system("./ferium add 404465") #FTB Library
-os.system("./ferium add 237307") #Cosmetic Armor Reworked
-os.system("./ferium add 240633") #Inventory Sorter
-os.system("./ferium add 32274") #JourneyMap
-os.system("./ferium add 250898") #Ore Excavation
-os.system("./ferium add 495476") #PuzzlesLib 
-os.system("./ferium add 422301") #Sophisticated Backpacks
-os.system("./ferium add 1001299") #The Knocker
-os.system("./ferium add 227639") #The Twilight Forest
-os.system("./ferium add 563928")  #TerraBlender
-os.system("./ferium add 404468") #FTB Teams Forge
-os.system("./ferium add 939167")  #TPA
-os.system("./ferium add 221939") #More Player Models
-os.system("./ferium add 225643") #Botania
-os.system("./ferium add 309927") #Curios API
-
-os.system("./ferium upgrade")
-
 tunnel_service = "playit"
 print("Procedding to use", tunnel_service)
 
 if tunnel_service == "playit":
   os.system(f'''curl -SsL https://playit-cloud.github.io/ppa/key.gpg | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/playit.gpg >/dev/null
             echo "deb [signed-by=/etc/apt/trusted.gpg.d/playit.gpg] https://playit-cloud.github.io/ppa/data ./" | sudo tee /etc/apt/sources.list.d/playit-cloud.list
-            sudo apt update
-            sudo apt install
+            sudo apt -y update
+            sudo apt -y install playit 
             ''')
   
-  os.system("./run.sh")
-  os.system("../save.sh")
+  os.system(f'''
+      cd Minecraft-server
+      java {memory_allocation} {server_flags} -jar {jar_name} nogui
+      ''')
+  os.system("/workspaces/Servermods/save.sh")

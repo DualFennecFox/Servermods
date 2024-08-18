@@ -1,9 +1,21 @@
-version = '1.20.1'
-forge_version = "47.2.21"  # If you are going to use forge
+import sys
+
+version = sys.argv[1]
+forge_version = "47.3.5" # If you are going to use forge
 
 #Chose server type. Currently available versions: fabric, paper, forge
-server_type = 'forge'
+server_type = sys.argv[2]
 java_path = "/usr/lib/jvm/java-17-openjdk-amd64/bin/java"
+
+import os 
+# Update the package lists
+os.system("sudo apt -y update && echo \"apt cache successfully updated\" || echo \"apt cache update failed, you might receive stale packages\"")
+# Install OpenJDK 17
+# !wget -qO - https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public | sudo apt-key add -
+# !sudo add-apt-repository --yes https://adoptopenjdk.jfrog.io/adoptopenjdk/deb/ &>/dev/null || echo \"Failed to add repo. Still can be ignored if openjdk17 gets installed.\"
+os.system("sudo apt-get -y install openjdk-17-jre-headless && echo \"Yay! Openjdk17 has been successfully installed.\" || echo \"Failed to install OpenJdk17.\"")
+#Perform java version check
+java_ver = os.system("java -version 2>&1 | awk -F[\"\.] -v OFS=. \"NR==1{print $2}\"")
 
 import requests
 import json
@@ -14,16 +26,14 @@ os.system("mkdir \"./Minecraft-server\"")
 os.system("cd \"./Minecraft-server\"")
 os.system("mkdir \"./Minecraft-server/mods\"")
 
-os.system("wget \"https://github.com/gorilla-devs/ferium/releases/download/v4.5.2/ferium-linux-nogui.zip\"")
-os.system("unzip -n \"ferium-linux-nogui.zip\"")
-os.system("rm \"ferium-linux-nogui.zip\"")
+if server_type == "paper":
+  a = requests.get("https://papermc.io/api/v2/projects/paper/versions/" + version)
+  b = requests.get("https://papermc.io/api/v2/projects/paper/versions/" + version + "/builds/" + str(a.json()["builds"][-1]))
+  print("https://papermc.io/api/v2/projects/paper/versions/" + version + "/builds/" + str(a.json()["builds"][-1]) + "/downloads/" + b.json()["downloads"]["application"]["name"])
 
-os.system("./ferium profile delete \"Server\"")
-os.system(f"./ferium profile create -n \"Server\" -v \"{version}\" -m \"{server_type}\" -o \"/workspaces/Servermods/Minecraft-server/mods\"")
-os.system("./ferium add 472661") #Fabric API
-os.system("./ferium add 306612") #CraftControlRCON Fabric
-os.system("./ferium upgrade")
+  url = "https://papermc.io/api/v2/projects/paper/versions/" + version + "/builds/" + str(a.json()["builds"][-1]) + "/downloads/" + b.json()["downloads"]["application"]["name"]
 
+  jar_name = "server.jar"
 if server_type == "fabric":
   url = "https://maven.fabricmc.net/net/fabricmc/fabric-installer/1.0.0/fabric-installer-1.0.0.jar"
   jar_name = "fabric-installer.jar"
@@ -56,4 +66,4 @@ elif server_type == "forge":
 gitconfig = {"server_type": server_type}
 json.dump(gitconfig, open("gitconfig.json",'w'))
 
-print('Done!')
+print('Servidor creado.')
